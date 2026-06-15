@@ -26,7 +26,8 @@
 ```
 final_project/
 ├── README.md                 專題總說明
-├── Makefile                  一鍵編譯
+├── Makefile                  一鍵編譯 (Linux / Mac)
+├── build.bat                 Windows 一鍵編譯並啟動
 ├── data/
 │   └── inventory.txt         範例 / 永久儲存的庫存資料
 ├── src/
@@ -36,10 +37,13 @@ final_project/
 │   ├── Clothing.h / .cpp     服飾 (衍生類別)
 │   ├── Inventory.h / .cpp    庫存管理 (STL 容器 + 檔案 I/O)
 │   └── main.cpp              終端機 UI 主程式
-└── docs/
-    ├── SPECIFICATION.md      規格說明書
-    ├── DEVELOPMENT.md        開發流程
-    └── report.html           期末報告原始檔 (可轉 PDF)
+├── docs/
+│   ├── SPECIFICATION.md      規格說明書
+│   ├── DEVELOPMENT.md        開發流程
+│   ├── build_pdf.py          產生期末報告 PDF 的程式
+│   └── screenshots/          程式執行畫面截圖
+└── report/
+    └── 4B4G0039.pdf          期末報告 (PDF，封面 + 功能說明 + 執行截圖)
 ```
 
 ---
