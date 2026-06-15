@@ -17,6 +17,7 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include <iomanip>   // std::setw
 #include <cstdlib>   // system("cls") / system("clear")
 
 #ifdef _WIN32
@@ -181,12 +182,58 @@ void doAddProduct(Inventory& inv) {
 }
 
 void doSearch(const Inventory& inv) {
-    std::string kw;
-    if (!askLine("\n  請輸入名稱關鍵字（q 取消）: ", kw)) { cancelled(); return; }
-    auto results = inv.searchByName(kw);
-    std::cout << "  找到 " << results.size() << " 筆結果：\n";
-    for (Product* p : results) {
-        p->displayDetail();
+    std::cout << "\n--- 搜尋商品 ---\n";
+    std::cout << "  搜尋方式：1) 依名稱關鍵字  2) 依商品編號\n";
+    int mode;
+    if (!askInt("  方式（q 取消）: ", mode)) { cancelled(); return; }
+
+    if (mode == 1) {
+        std::string kw;
+        if (!askLine("  請輸入名稱關鍵字: ", kw)) { cancelled(); return; }
+        auto results = inv.searchByName(kw);
+        std::cout << "  找到 " << results.size() << " 筆結果：\n";
+        for (Product* p : results) {
+            p->displayDetail();
+        }
+    } else if (mode == 2) {
+        int id;
+        if (!askInt("  請輸入商品編號: ", id)) { cancelled(); return; }
+        Product* p = inv.findById(id);
+        if (p) {
+            std::cout << "  找到 1 筆結果：\n";
+            p->displayDetail();
+        } else {
+            std::cout << "  >> 查無編號 " << id << " 的商品。\n";
+        }
+    } else {
+        std::cout << "  搜尋方式錯誤。\n";
+    }
+}
+
+// 顯示商品清單並讓使用者以「項次」(1,2,3...) 選取，
+// 免去硬背商品編號的麻煩。回傳所選商品指標；
+// 若庫存為空或使用者取消，回傳 nullptr。
+Product* selectProduct(const Inventory& inv, const std::string& action) {
+    if (inv.empty()) {
+        std::cout << "  (目前沒有任何商品，無法" << action << ")\n";
+        return nullptr;
+    }
+    std::cout << "\n--- 請選擇要" << action << "的商品（輸入 q 取消）---\n";
+    const auto& items = inv.all();
+    for (size_t i = 0; i < items.size(); ++i) {
+        std::cout << "  [" << std::right << std::setw(2) << (i + 1) << "] ";
+        items[i]->displayDetail();
+    }
+    int idx;
+    while (true) {
+        if (!askInt("  請輸入項次: ", idx)) {
+            std::cout << "  >> 已取消。\n";
+            return nullptr;
+        }
+        if (idx >= 1 && idx <= static_cast<int>(items.size())) {
+            return items[idx - 1].get();
+        }
+        std::cout << "  ※ 請輸入 1 ~ " << items.size() << " 之間的項次\n";
     }
 }
 
@@ -246,41 +293,49 @@ int main() {
             case 4:
                 doSearch(inv);
                 break;
-            case 5: {
-                int id, amt;
-                if (!askInt("\n  商品編號（q 取消）: ", id)) { cancelled(); break; }
-                if (!askInt("  進貨數量: ", amt))          { cancelled(); break; }
-                std::cout << (inv.restock(id, amt) ? "  >> 進貨成功。\n"
-                                                   : "  >> 找不到該商品。\n");
+            case 5: {  // 進貨
+                Product* p = selectProduct(inv, "進貨");
+                if (!p) break;
+                int amt;
+                if (!askInt("  進貨數量（q 取消）: ", amt)) { cancelled(); break; }
+                if (amt <= 0) {
+                    std::cout << "  數量需大於 0。\n";
+                    break;
+                }
+                p->addStock(amt);
+                std::cout << "  >> 進貨成功，" << p->getName()
+                          << " 目前庫存 " << p->getQuantity() << "。\n";
                 break;
             }
-            case 6: {
-                int id, amt;
-                if (!askInt("\n  商品編號（q 取消）: ", id)) { cancelled(); break; }
-                if (!askInt("  銷售數量: ", amt))          { cancelled(); break; }
-                std::cout << (inv.sell(id, amt) ? "  >> 銷售成功。\n"
-                                                : "  >> 銷售失敗 (商品不存在或庫存不足)。\n");
-                break;
-            }
-            case 7: {
-                int id;
-                if (!askInt("\n  商品編號（q 取消）: ", id)) { cancelled(); break; }
-                Product* p = inv.findById(id);
-                if (p) {
-                    double np;
-                    if (!askDouble("  新單價: ", np)) { cancelled(); break; }
-                    p->setPrice(np);
-                    std::cout << "  >> 價格已更新。\n";
+            case 6: {  // 銷售
+                Product* p = selectProduct(inv, "銷售");
+                if (!p) break;
+                int amt;
+                if (!askInt("  銷售數量（q 取消）: ", amt)) { cancelled(); break; }
+                if (p->removeStock(amt)) {
+                    std::cout << "  >> 銷售成功，" << p->getName()
+                              << " 剩餘庫存 " << p->getQuantity() << "。\n";
                 } else {
-                    std::cout << "  >> 找不到該商品。\n";
+                    std::cout << "  >> 銷售失敗 (數量不正確或庫存不足)。\n";
                 }
                 break;
             }
-            case 8: {
-                int id;
-                if (!askInt("\n  欲刪除的商品編號（q 取消）: ", id)) { cancelled(); break; }
-                std::cout << (inv.removeById(id) ? "  >> 已刪除。\n"
-                                                 : "  >> 找不到該商品。\n");
+            case 7: {  // 修改價格
+                Product* p = selectProduct(inv, "修改價格");
+                if (!p) break;
+                double np;
+                if (!askDouble("  新單價（q 取消）: ", np)) { cancelled(); break; }
+                p->setPrice(np);
+                std::cout << "  >> " << p->getName() << " 價格已更新為 " << np << "。\n";
+                break;
+            }
+            case 8: {  // 刪除
+                Product* p = selectProduct(inv, "刪除");
+                if (!p) break;
+                int id = p->getId();
+                std::string name = p->getName();   // 先複製，removeById 後 p 失效
+                inv.removeById(id);
+                std::cout << "  >> 已刪除 編號" << id << " " << name << "。\n";
                 break;
             }
             case 9:
