@@ -169,14 +169,16 @@ def ctext(t, fnt, color, gap):
     w = draw.textlength(t, font=fnt)
     draw.text(((W - w) // 2, y), t, font=fnt, fill=color)
     y += gap
-ctext("C++ 程式設計　期末專題報告", font(30), "#555555", 120)
+ctext("物件導向程式設計　期末專題報告", font(30), "#555555", 120)
 ctext("商店庫存管理系統", F_H1, "#1f3a63", 80)
 ctext("Store Inventory Management System", font(26), "#777777", 150)
 # 資訊框
 bx0, bx1 = 360, 880
 by0 = y
-info = ["學　號：4B4G0039", "姓　名：＿＿＿＿＿＿＿＿",
-        "開發語言：C++ (C++14)", "繳交日期：2026 / 06 / 15"]
+info = ["指導老師：陳定宏",
+        "學　號：4B4G0039",
+        "姓　名：江金桔",
+        "製作日期：2026 / 06 / 15"]
 bh = 40 + len(info) * 56
 draw.rectangle([bx0, by0, bx1, by0 + bh], outline=LBLUE, width=3)
 yy = by0 + 30
@@ -207,17 +209,7 @@ table([
 heading2("二、類別繼承架構（重點）")
 para("系統核心是一個三層的繼承架構。Product 為抽象基底類別，定義所有商品共用的屬性與"
      "三個純虛擬函式；三個衍生類別各自擁有專屬屬性並覆寫虛擬函式：")
-code_block([
-    "        Product  (抽象基底類別)",
-    "        |- id_  name_  price_  quantity_",
-    "        |- category()      = 0   <- 純虛擬",
-    "        |- displayDetail() = 0   <- 純虛擬 (多型)",
-    "        |- serialize()     = 0   <- 純虛擬",
-    "                 |  public 繼承",
-    "      +----------+-----------+",
-    "    Food     Electronics   Clothing",
-    "  (有效期限)   (保固月數)    (尺寸)",
-])
+image(os.path.join(DOCS, "diagram_inheritance.png"), scale=1.0)
 para("Inventory 以 std::vector<std::unique_ptr<Product>> 持有所有商品，僅透過基底指標"
      "呼叫 displayDetail()，即由實際型別決定輸出格式，這就是多型 (polymorphism)。")
 
@@ -229,7 +221,7 @@ table([
     ["1", "新增商品", "選擇類別後輸入名稱、單價、數量與專屬欄位，自動配發編號"],
     ["2", "顯示所有商品", "依實際類別以不同格式列出（多型展示）"],
     ["3", "依類別顯示", "只列出食品 / 電子 / 服飾其中一類"],
-    ["4", "搜尋商品", "依名稱關鍵字做模糊比對"],
+    ["4", "搜尋商品", "可依名稱關鍵字或依商品編號搜尋"],
     ["5", "進貨", "對指定編號增加庫存"],
     ["6", "銷售", "減少庫存；庫存不足則拒絕，避免負庫存"],
     ["7", "修改價格", "變更指定商品單價"],
@@ -243,24 +235,27 @@ table([
 # 執行畫面
 new_page()
 heading2("四、程式執行畫面與說明")
-heading3("畫面 1：啟動載入庫存 + 顯示所有商品")
-para("程式啟動時自動由 data/inventory.txt 讀入 6 筆商品。三種商品以不同格式顯示"
-     "（食品→有效期限、電子→保固、服飾→尺寸），即為多型。", fnt=F_CAP, color="#555555", lh=32)
-image(os.path.join(SHOTS, "01_startup_list.png"), scale=0.62)
-heading3("畫面 2：新增商品（電子產品）")
-para("新增一台「智慧手錶」，系統自動配發編號 1007；再次顯示可見新商品已加入清單。",
+heading3("畫面 1：啟動載入資料 + 主選單（刷新式單頁 UI）")
+para("程式啟動時自動由 data/inventory.txt 讀入 6 筆商品，按 Enter 後進入主選單。"
+     "採刷新式單頁介面，每次操作後會清空畫面、重畫乾淨的選單。",
      fnt=F_CAP, color="#555555", lh=32)
-image(os.path.join(SHOTS, "02_add.png"), scale=0.60)
+image(os.path.join(SHOTS, "01_startup_menu.png"), scale=0.60)
+heading3("畫面 2：銷售 — 列出清單用「項次」選取")
+para("進貨 / 銷售 / 改價 / 刪除時會先列出商品清單，使用者只需輸入「項次」(1,2,3…) 即可選取，"
+     "不必記憶商品編號；清單同時以不同格式顯示三種商品，即為多型。完成後回報最新庫存。",
+     fnt=F_CAP, color="#555555", lh=32)
+image(os.path.join(SHOTS, "02_sell_select.png"), scale=0.60)
 
 new_page()
-heading3("畫面 3：銷售扣庫存 + 統計報表")
-para("對編號 1001（蘋果）銷售 30 件後，庫存自動扣減；統計報表以 std::map 彙整各類別的"
-     "種類數與庫存總值。", fnt=F_CAP, color="#555555", lh=32)
-image(os.path.join(SHOTS, "03_sell_report.png"), scale=0.80)
-heading3("畫面 4：名稱搜尋 + 依類別顯示")
-para("以關鍵字「耳機」搜尋到藍牙耳機；並示範依「服飾」類別篩選顯示。",
+heading3("畫面 3：搜尋 — 可依名稱或依商品編號")
+para("搜尋商品時可選擇「依名稱關鍵字」或「依商品編號」兩種方式，圖中示範以編號 1004 找到行動電源。",
      fnt=F_CAP, color="#555555", lh=32)
-image(os.path.join(SHOTS, "04_search_category.png"), scale=0.62)
+image(os.path.join(SHOTS, "03_search.png"), scale=0.66)
+heading3("畫面 4：防呆與取消機制")
+para("必填欄位若只按 Enter（空白）會被擋下並要求重新輸入（防呆）；"
+     "任何輸入步驟輸入 q 可隨時取消目前動作並返回主選單。",
+     fnt=F_CAP, color="#555555", lh=32)
+image(os.path.join(SHOTS, "04_foolproof_cancel.png"), scale=0.66)
 
 # 編譯與結語
 new_page()

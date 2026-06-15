@@ -26,7 +26,8 @@
 ```
 final_project/
 ├── README.md                 專題總說明
-├── Makefile                  一鍵編譯
+├── Makefile                  一鍵編譯 (Linux / Mac)
+├── build.bat                 Windows 一鍵編譯並啟動
 ├── data/
 │   └── inventory.txt         範例 / 永久儲存的庫存資料
 ├── src/
@@ -36,10 +37,13 @@ final_project/
 │   ├── Clothing.h / .cpp     服飾 (衍生類別)
 │   ├── Inventory.h / .cpp    庫存管理 (STL 容器 + 檔案 I/O)
 │   └── main.cpp              終端機 UI 主程式
-└── docs/
-    ├── SPECIFICATION.md      規格說明書
-    ├── DEVELOPMENT.md        開發流程
-    └── report.html           期末報告原始檔 (可轉 PDF)
+├── docs/
+│   ├── SPECIFICATION.md      規格說明書
+│   ├── DEVELOPMENT.md        開發流程
+│   ├── build_pdf.py          產生期末報告 PDF 的程式
+│   └── screenshots/          程式執行畫面截圖
+└── report/
+    └── 4B4G0039.pdf          期末報告 (PDF，封面 + 功能說明 + 執行截圖)
 ```
 
 ---
@@ -102,6 +106,15 @@ make clean
    5. 進貨 (增加庫存)    11. 從檔案讀取
    6. 銷售 (減少庫存)     0. 離開系統 (自動存檔)
 ```
+
+> 操作提示：
+> - 採「刷新式單頁」介面，每次操作後按 **Enter** 會清空畫面、重畫乾淨的選單。
+> - **進貨 / 銷售 / 修改價格 / 刪除** 會先**列出商品清單**，直接用「項次」(1,2,3…) 選取，不需記憶商品編號。
+> - **搜尋商品** 可選擇 **依名稱關鍵字** 或 **依商品編號**。
+> - 任何輸入步驟輸入 **q** 可隨時**取消目前動作**並返回主選單。
+> - 具**防呆**機制：空白(只按 Enter)或非數字輸入會被擋下並要求重新輸入。
+> - Windows 上程式會自動將主控台設為 UTF-8（`SetConsoleOutputCP`），正確顯示繁體中文。
+
 
 ---
 
