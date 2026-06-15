@@ -17,6 +17,7 @@
 #include <limits>
 #include <string>
 #include <memory>
+#include <cstdlib>   // system("cls") / system("clear")
 
 static const std::string DATA_FILE = "data/inventory.txt";
 
@@ -56,6 +57,22 @@ std::string readLine(const std::string& prompt) {
     std::string s;
     std::getline(std::cin, s);
     return s;
+}
+
+// 清除整個終端機畫面 (跨平台)：達成「刷新式單頁」顯示效果
+void clearScreen() {
+#ifdef _WIN32
+    std::system("cls");
+#else
+    std::system("clear");
+#endif
+}
+
+// 暫停，等待使用者按 Enter，避免結果一閃即逝就被清除
+void pause() {
+    std::cout << "\n>> 按 Enter 鍵繼續...";
+    std::string dummy;
+    std::getline(std::cin, dummy);
 }
 
 // ---------- 選單畫面 ----------
@@ -138,9 +155,11 @@ int main() {
     } else {
         std::cout << "找不到既有資料檔，將以空白庫存開始。\n";
     }
+    pause();   // 讓使用者先看到載入結果，再進入主畫面
 
     bool running = true;
     while (running) {
+        clearScreen();                       // 每次重畫前先清空畫面 (刷新式單頁)
         printMenu();
         int choice = readInt("請輸入選項: ");
 
@@ -212,6 +231,11 @@ int main() {
                 break;
             default:
                 std::cout << "  無效的選項，請重新輸入。\n";
+        }
+
+        // 動作完成後暫停，等使用者按 Enter，下一輪迴圈才會清空並重畫選單
+        if (choice != 0) {
+            pause();
         }
     }
     return 0;
