@@ -1,0 +1,8 @@
+# 編譯產出
+build/
+inventory
+*.o
+*.exe
+
+# 系統檔
+.DS_Store
