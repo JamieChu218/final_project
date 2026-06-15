@@ -209,17 +209,7 @@ table([
 heading2("二、類別繼承架構（重點）")
 para("系統核心是一個三層的繼承架構。Product 為抽象基底類別，定義所有商品共用的屬性與"
      "三個純虛擬函式；三個衍生類別各自擁有專屬屬性並覆寫虛擬函式：")
-code_block([
-    "        Product  (抽象基底類別)",
-    "        |- id_  name_  price_  quantity_",
-    "        |- category()      = 0   <- 純虛擬",
-    "        |- displayDetail() = 0   <- 純虛擬 (多型)",
-    "        |- serialize()     = 0   <- 純虛擬",
-    "                 |  public 繼承",
-    "      +----------+-----------+",
-    "    Food     Electronics   Clothing",
-    "  (有效期限)   (保固月數)    (尺寸)",
-])
+image(os.path.join(DOCS, "diagram_inheritance.png"), scale=1.0)
 para("Inventory 以 std::vector<std::unique_ptr<Product>> 持有所有商品，僅透過基底指標"
      "呼叫 displayDetail()，即由實際型別決定輸出格式，這就是多型 (polymorphism)。")
 
